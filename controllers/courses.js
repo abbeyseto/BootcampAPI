@@ -1,99 +1,104 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
-const geocoder = require("../utils/geocoder");
-const Bootcamp = require("../models/Bootcamp");
+const Course = require("../models/Course");
 const { query } = require("express");
 
-//@desc     Get all bootcamps
-//@route    GET /api/v1/bootcamps
+//@desc     Get all Courses
+//@route    GET /api/v1/courses
+//@route    GET /api/v1/bootcamps/:bootcampId/courses
 //@access   Public
-exports.getBootcamps = asyncHandler(async (req, res, next) => {
+exports.getCourses = asyncHandler(async (req, res, next) => {
   let query;
 
+  if (req.params.bootcampId) {
+    query = Course.find({ bootcamp: req.params.bootcampId });
+  } else {
+    query = Course.find();
+  }
   //Copy req.query
-  const reqQuery = { ...req.query };
+  //   const reqQuery = { ...req.query };
 
   //Fields to exclude
-  const removeFields = ["select", "sort", "page", "limit"];
+  //   const removeFields = ["select", "sort", "page", "limit"];
 
   //Loop over removeFields and delete the from reqQuery
-  removeFields.forEach((param) => delete reqQuery[param]);
+  //   removeFields.forEach((param) => delete reqQuery[param]);
 
   //Create query string
-  let queryStr = JSON.stringify(reqQuery);
+  //   let queryStr = JSON.stringify(reqQuery);
 
   // Create operators ($gt,$gte, $lt, $lte and $in)
-  queryStr = queryStr.replace(
-    /\b(gt|gte|lt|lte|in)\b/g,
-    (match) => `$${match}`
-  );
+  //   queryStr = queryStr.replace(
+  //     /\b(gt|gte|lt|lte|in)\b/g,
+  //     (match) => `$${match}`
+  //   );
   // Finging resources
-  query = Bootcamp.find(JSON.parse(queryStr));
+  //   query = Bootcamp.find(JSON.parse(queryStr));
 
   // Select fields
-  if (req.query.select) {
-    const fields = req.query.select.split(",").join(" ");
-    query = query.select(fields);
-  }
+  //   if (req.query.select) {
+  //     const fields = req.query.select.split(",").join(" ");
+  //     query = query.select(fields);
+  //   }
 
-  //Sort
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" ");
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort("-createdAt");
-  }
+  //   //Sort
+  //   if (req.query.sort) {
+  //     const sortBy = req.query.sort.split(",").join(" ");
+  //     query = query.sort(sortBy);
+  //   } else {
+  //     query = query.sort("-createdAt");
+  //   }
   //Pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 25;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const total = await Bootcamp.countDocuments();
+  //   const page = parseInt(req.query.page, 10) || 1;
+  //   const limit = parseInt(req.query.limit, 10) || 25;
+  //   const startIndex = (page - 1) * limit;
+  //   const endIndex = page * limit;
+  //   const total = await Bootcamp.countDocuments();
 
-  query = query.skip(startIndex).limit(limit);
+  //   query = query.skip(startIndex).limit(limit);
 
   //Executing query
-  const bootcamps = await query;
+  const courses = await query;
 
   // Pagination
-  const pagination = {};
+//   const pagination = {};
 
-  if (endIndex < total) {
-    const pageString = `page=${page}`;
-    let nextUrl = req.query.page
-      ? `${req.hostname}${req.originalUrl.replace(
-          pageString,
-          `page=${page + 1}`
-        )}`
-      : `${req.hostname}${req.originalUrl}&page=${page + 1}`;
-    pagination.next = {
-      page: page + 1,
-      limit,
-      url: nextUrl,
-    };
-  }
+//   if (endIndex < total) {
+//     const pageString = `page=${page}`;
+//     let nextUrl = req.query.page
+//       ? `${req.hostname}${req.originalUrl.replace(
+//           pageString,
+//           `page=${page + 1}`
+//         )}`
+//       : `${req.hostname}${req.originalUrl}&page=${page + 1}`;
+//     pagination.next = {
+//       page: page + 1,
+//       limit,
+//       url: nextUrl,
+//     };
+//   }
 
-  if (startIndex > 0) {
-    const pageString = `page=${page}`;
-    let prevUrl = req.query.page
-      ? `${req.hostname}${req.originalUrl.replace(
-          pageString,
-          `page=${page - 1}`
-        )}`
-      : `${req.hostname}${req.originalUrl}&page=${page - 1}}`;
-    pagination.prev = {
-      page: page - 1,
-      limit,
-      url: prevUrl
-    };
-  }
+//   if (startIndex > 0) {
+//     const pageString = `page=${page}`;
+//     let prevUrl = req.query.page
+//       ? `${req.hostname}${req.originalUrl.replace(
+//           pageString,
+//           `page=${page - 1}`
+//         )}`
+//       : `${req.hostname}${req.originalUrl}&page=${page - 1}}`;
+//     pagination.prev = {
+//       page: page - 1,
+//       limit,
+//       url: prevUrl,
+//     };
+//   }
 
   res.status(200).json({
     sucess: true,
-    msg: "Showing all bootcamps",
-    count: bootcamps.length,
-    pagination,
-    data: bootcamps,
+    msg: "Showing all courses",
+    count: courses.length,
+    // pagination,
+    data: courses,
   });
 });
 
@@ -166,7 +171,7 @@ exports.deleteBootcamps = asyncHandler(async (req, res, next) => {
 //@desc     Get bootcamps within a radius
 //@route    GET /api/v1/bootcamps/radius/:zipcode/:distance
 //@access   Private
-exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
+exports.getCoursesInRadius = asyncHandler(async (req, res, next) => {
   const { zipcode, distance } = req.params;
 
   //Get lat/lbg from geocoder

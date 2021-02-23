@@ -13,8 +13,8 @@ dotenv.config({ path: "./config/config.env" });
 connectDB();
 
 // Routes
-const bootcamp = require("./routes/bootcamp");
-
+const bootcamps = require("./routes/bootcamps");
+const courses = require("./routes/courses");
 const app = express();
 
 //Body parser
@@ -26,7 +26,8 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Mount Routers
-app.use("/api/v1/bootcamps", bootcamp);
+app.use("/api/v1/bootcamps", bootcamps);
+app.use("/api/v1/courses", courses);
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000;
